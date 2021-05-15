@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+  <h1>Orders!!!</h1>
+  <a th:href="@{/meal}">Meal</a>
+  <a th:href="@{/orders/create}">Create Order</a>
+  <hr>
+  <form th:each="order : ${orders}">
+      <h2 th:text="${order.tableNumber}"></h2>
+      <form th:each="meal : ${order.mealList}">
+          <h3 th:text="${meal.name}"></h3>
+      </form>
+  </form>
+
+</body>
+</html>
