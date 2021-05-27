@@ -1,49 +1,92 @@
 package com.example.awaiter.controller;
 
-import com.example.awaiter.model.Meal;
-import com.example.awaiter.model.Orders;
+import com.example.awaiter.dto.OrderMealDto;
+import com.example.awaiter.model.MealInOrder;
+import com.example.awaiter.model.Order;
 import com.example.awaiter.service.MealService;
+import com.example.awaiter.service.OrderMealService;
 import com.example.awaiter.service.OrderService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import lombok.Data;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Controller
-@RequestMapping("/orders")
+@RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @AllArgsConstructor
 public class OrderController {
 
-    private OrderService orderService;
-    private MealService mealService;
+    private final OrderService orderService;
+    private final MealService mealService;
+    private final OrderMealService orderMealService;
 
-    @GetMapping
-    public String showOrders(Model model) {
-        model.addAttribute("orders", orderService.getAll());
-        return "orders";
+    @GetMapping("/orders")
+    public ResponseEntity<List<Order>> list() {
+        return new ResponseEntity<>(orderService.getAll(), HttpStatus.OK);
     }
 
-    @GetMapping("/create")
-    public String createOrder(Model model){
-        List<Meal> mealList = new ArrayList<>();
-        model.addAttribute("order", new Orders());
-        model.addAttribute("meals", mealService.getAll());
-        model.addAttribute("mealsList", mealList);
-        return "createOrder";
+
+    @PostMapping("/orders")
+    public ResponseEntity<Order> processCreateOrder(@RequestBody OrderForm orderForm) throws Exception {
+        List<OrderMealDto> formDtos = orderForm.getMealOrders();
+        validateMealExistence(formDtos);
+        Order order = new Order();
+        order = this.orderService.save(order);
+
+        List<MealInOrder> orderMeals = new ArrayList<>();
+        for(OrderMealDto dto : formDtos) {
+            orderMeals.add(orderMealService.create(new MealInOrder(
+                    order, mealService.findMealById(dto.getMeal().getId()), dto.getQuantity()
+            )));
+            System.out.println(dto.getMeal().toString());
+        }
+
+        order.setMealList(orderMeals);
+        order.setTableNumber(orderForm.tableNumber);
+        order.setStatus(orderForm.status);
+        order.getMealList().forEach(e -> System.out.println(e.getMeal().getName()));
+        this.orderService.update(order);
+
+        return new ResponseEntity<>(order, HttpStatus.OK);
     }
 
-    @PostMapping("/create")
-    public String processCreateOrder(@ModelAttribute("order")Orders order,
-                                     @ModelAttribute("mealList")List<Meal> mealList){
-        order.setMealList(mealList);
-        orderService.save(order);
-        return "redirect:/orders";
+    private void validateMealExistence(List<OrderMealDto> orderMeals) throws Exception{
+        List<OrderMealDto> list = orderMeals.stream().filter(
+                op -> Objects.isNull(mealService.findMealById(op.getMeal().getId()))).collect(Collectors.toList());
+        if(!CollectionUtils.isEmpty(list)) new Exception("Not found!!");
+    }
+
+    @GetMapping("/orders/{id}")
+    public ResponseEntity<Order> getMealInOrder(@PathVariable("id") Long id){
+        Order order = orderService.findById(id);
+        return new ResponseEntity<>(order, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/orders/delete/{id}")
+    public ResponseEntity<?> deleteOrder(@PathVariable("id") Long id) {
+        orderService.delete(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class OrderForm {
+
+        private List<OrderMealDto> mealList;
+
+        private int tableNumber;
+
+        private String status;
+
+        public List<OrderMealDto> getMealOrders() {
+            return this.mealList;
+        }
+
+
     }
 }

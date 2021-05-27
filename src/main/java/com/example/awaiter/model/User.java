@@ -1,5 +1,5 @@
 package com.example.awaiter.model;
-
+/*
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -59,4 +59,4 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-}
+}*/

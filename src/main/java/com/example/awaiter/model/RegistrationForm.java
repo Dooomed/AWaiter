@@ -1,6 +1,6 @@
 package com.example.awaiter.model;
 
-import lombok.Data;
+/*import lombok.Data;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Data
@@ -14,4 +14,4 @@ public class RegistrationForm {
                 username, passwordEncoder.encode(password)
         );
     }
-}
+}*/

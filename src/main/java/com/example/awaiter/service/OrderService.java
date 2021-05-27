@@ -1,23 +1,38 @@
 package com.example.awaiter.service;
 
-import com.example.awaiter.model.Orders;
+import com.example.awaiter.model.Order;
 import com.example.awaiter.repository.OrderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
+@AllArgsConstructor
 public class OrderService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderMealService orderMealService;
+    private final OrderRepository orderRepository;
 
-    public Orders save(Orders orders) {
-        return orderRepository.save(orders);
+    public Order save(Order order) {
+        return orderRepository.save(order);
     }
 
-    public List<Orders> getAll() {
+    public List<Order> getAll() {
         return orderRepository.findAll();
     }
+
+    public void update(Order order) {
+        orderRepository.save(order);
+    }
+
+    public Order findById(Long id) {
+        return orderRepository.findOrderById(id);
+    }
+
+    public void delete(Long id) {
+        orderMealService.deleteMealByOrder(id);
+        orderRepository.deleteById(id);}
 }

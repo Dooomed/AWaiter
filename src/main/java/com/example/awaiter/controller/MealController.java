@@ -2,36 +2,41 @@ package com.example.awaiter.controller;
 
 import com.example.awaiter.model.Meal;
 import com.example.awaiter.service.MealService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/meal")
+import java.util.List;
+
+@RestController
+@CrossOrigin(origins = "http://localhost:4200")
+@AllArgsConstructor
 public class MealController {
 
-    @Autowired
-    private MealService mealService;
 
-    @GetMapping
-    public String showMealDesign(Model model) {
-        model.addAttribute("meals", mealService.getAll());
-        return "meals";
+    private final MealService mealService;
+
+    @GetMapping("/meals")
+    public ResponseEntity<List<Meal>> allMeals() {
+        return new ResponseEntity<>(mealService.getAll(), HttpStatus.OK);
     }
 
-    @GetMapping("/create")
-    public String showCreateDesign(Model model){
-        model.addAttribute("meal", new Meal());
-        return "createMeal";
-    }
-
-    @PostMapping("/create")
-    public String processCreateDesign(@ModelAttribute("meal") Meal meal){
+    @PostMapping("/meals")
+    public ResponseEntity<Meal> addMeal(@RequestBody Meal meal){
         mealService.save(meal);
-        return "redirect:/meal";
+        return new ResponseEntity<>(meal, HttpStatus.CREATED);
+    }
+
+    @DeleteMapping("/meals/delete/{id}")
+    public ResponseEntity<?> deleteMeal(@PathVariable("id") Long id) {
+        mealService.deleteMeal(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/meals/{id}")
+    public ResponseEntity<Meal> findMeal(@PathVariable("id") Long id) {
+        return new ResponseEntity<>(mealService.findMealById(id), HttpStatus.OK);
     }
 }

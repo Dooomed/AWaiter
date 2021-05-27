@@ -1,5 +1,5 @@
 package com.example.awaiter.config;
-
+/*
 import com.example.awaiter.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -27,15 +27,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/", "/meal", "/meal/**")
-                .access("hasRole('ROLE_USER')")
-                .and()
-                .formLogin()
-                .loginPage("/login")
-                .defaultSuccessUrl("/meal")
-                .and()
-                .logout()
-                .logoutSuccessUrl("/login");
+                .antMatchers("/")
+                .access("hasRole('ROLE_USER')");
     }
 
     @Override
@@ -44,4 +37,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(encoder());
     }
-}
+}*/
